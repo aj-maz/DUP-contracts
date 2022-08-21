@@ -1,9 +1,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { expect } from "chai";
 import type { BigNumber } from "ethers";
 
-import { LSP7VotesMock } from "../../typechain-types/mocks/LSP7VotesMock";
+import { LSP7VotesMock } from "../../typechain-types/contracts/mocks/LSP7VotesMock";
 
 export type LSP7VotesTestAccounts = {
   holder: SignerWithAddress;
@@ -64,30 +64,33 @@ export const shouldBehaveLikeLSP7Votes = (
 
       const token = lsp7Votes;
       await token.mint(holder.address, supply, true, "0x");
-      //expect(await token.delegates(holder.address)).to.be.equal(ZERO_ADDRESS);
-      //
-      //const { receipt } = await token.delegate(holder, { from: holder });
-      //expectEvent(receipt, "DelegateChanged", {
-      //  delegator: holder,
-      //  fromDelegate: ZERO_ADDRESS,
-      //  toDelegate: holder,
-      //});
-      //expectEvent(receipt, "DelegateVotesChanged", {
-      //  delegate: holder,
-      //  previousBalance: "0",
-      //  newBalance: supply,
-      //});
+      expect(await token.delegates(holder.address)).to.be.equal(ZERO_ADDRESS);
 
-      //expect(await token.delegates(holder)).to.be.equal(holder);
-      //
-      //expect(await token.getVotes(holder)).to.be.bignumber.equal(supply);
-      //expect(
-      //  await token.getPastVotes(holder, receipt.blockNumber - 1)
-      //).to.be.bignumber.equal("0");
-      //await time.advanceBlock();
-      //expect(
-      //  await token.getPastVotes(holder, receipt.blockNumber)
-      //).to.be.bignumber.equal(supply);
+      const delegateTx = await token.connect(holder).delegate(holder.address);
+
+      expect(delegateTx)
+        .to.emit(token, "DelegateChanged")
+        .withArgs(holder.address, ZERO_ADDRESS, holder.address)
+        .to.emit(token, "DelegateVotesChanged")
+        .withArgs(holder.address, 0, supply);
+
+      expect(await token.delegates(holder.address)).to.be.equal(holder.address);
+      expect(String(await token.getVotes(holder.address))).to.be.equal(
+        String(supply)
+      );
+      if (delegateTx && delegateTx.blockNumber) {
+        expect(
+          String(
+            await token.getPastVotes(holder.address, delegateTx.blockNumber - 1)
+          )
+        ).to.be.equal("0");
+        await network.provider.send("evm_mine");
+        expect(
+          String(
+            await token.getPastVotes(holder.address, delegateTx.blockNumber)
+          )
+        ).to.be.equal(String(supply));
+      }
     });
   });
 };

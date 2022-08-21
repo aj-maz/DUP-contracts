@@ -8,12 +8,14 @@ contract LSP7VotesMock is LSP7Votes {
         string memory name_,
         string memory symbol_,
         address newOwner_
-    ) {}
+    ) LSP7Votes(name_, symbol_, newOwner_) {}
 
     function mint(
         address to,
         uint256 amount,
         bool force,
         bytes memory data
-    ) public {}
+    ) public {
+        super._mint(to, amount, force, data);
+    }
 }
