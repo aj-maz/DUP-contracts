@@ -1,12 +1,16 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { getNamedAccounts, LSP7TestContext } from "./LSP7Votes.behaviour";
+import {
+  getNamedAccounts,
+  LSP7VotesTestContext,
+  shouldBehaveLikeLSP7Votes,
+} from "./LSP7Votes.behaviour";
 
 describe("LSP7Votes", () => {
   describe("when using LSP7Votes contract with constructor", () => {
-    const buildTestContext = async (): Promise<LSP7TestContext> => {
+    const buildTestContext = async (): Promise<LSP7VotesTestContext> => {
       const accounts = await getNamedAccounts();
-      const initialSupply = ethers.BigNumber.from("3");
+      const supply = ethers.BigNumber.from("10000000000000000000000000");
       const deployParams = {
         name: "LSP7 - deployed with constructor",
         symbol: "NFT",
@@ -21,25 +25,19 @@ describe("LSP7Votes", () => {
         deployParams.newOwner
       );
 
-      // mint tokens for the owner
-      await lsp7VotesMock.mint(
-        accounts.holder.address,
-        initialSupply,
-        true,
-        "0x"
-      );
-
       return {
         accounts,
         lsp7Votes: lsp7VotesMock,
         deployParams,
-        initialSupply,
+        supply,
       };
     };
 
     describe("when deploying the contract", () => {});
 
-    describe("when testing deployed contract", () => {});
+    describe("when testing deployed contract", () => {
+      shouldBehaveLikeLSP7Votes(buildTestContext);
+    });
   });
 
   describe("when using LSP7Votes contract with proxy", () => {});
