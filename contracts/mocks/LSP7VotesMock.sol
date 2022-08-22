@@ -18,4 +18,12 @@ contract LSP7VotesMock is LSP7Votes {
     ) public {
         super._mint(to, amount, force, data);
     }
+
+    function burn(
+        address to,
+        uint256 amount,
+        bytes memory data
+    ) public {
+        super._burn(to, amount, data);
+    }
 }

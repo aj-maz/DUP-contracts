@@ -173,9 +173,8 @@ export const shouldBehaveLikeLSP7Votes = (
 
   describe("When transfering", () => {
     beforeEach(async function () {
-      const { accounts, lsp7Votes, supply } = context;
+      const { accounts, lsp7Votes: token, supply } = context;
       const { holder } = accounts;
-      const token = lsp7Votes;
 
       await token.mint(holder.address, supply, true, "0x");
     });
@@ -313,6 +312,102 @@ export const shouldBehaveLikeLSP7Votes = (
       expect(
         String(await token.getPastVotes(recipient.address, blockNumber.number))
       ).to.be.equal(String(this.recipientVotes));
+    });
+  });
+
+  describe("When minting", () => {
+    beforeEach(async function () {
+      const { accounts, lsp7Votes: token } = context;
+      const { holder } = accounts;
+
+      await token.connect(holder).delegate(holder.address);
+    });
+
+    it("reverts if block number >= current block", async function () {
+      const { accounts, lsp7Votes: token } = context;
+      const { holder } = accounts;
+
+      await expect(token.getPastTotalSupply(5e10)).to.be.revertedWith(
+        "LSP7Votes: block not yet mined"
+      );
+    });
+
+    it("returns 0 if there are no checkpoints", async function () {
+      const { lsp7Votes: token } = context;
+      expect(String(await token.getPastTotalSupply(0))).to.be.equal("0");
+    });
+
+    it("returns the latest block if >= last checkpoint block", async function () {
+      const { accounts, lsp7Votes: token, supply } = context;
+      const { holder, recipient } = accounts;
+
+      const t1 = await token.mint(holder.address, supply, true, "0x");
+
+      const receipt = await t1.wait();
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      expect(
+        String(await token.getPastTotalSupply(receipt.blockNumber))
+      ).to.be.equal(supply);
+      expect(
+        String(await token.getPastTotalSupply(receipt.blockNumber + 1))
+      ).to.be.equal(supply);
+    });
+
+    it("generally returns the voting balance at the appropriate checkpoint", async function () {
+      const { accounts, lsp7Votes: token, supply } = context;
+      const { holder, recipient } = accounts;
+
+      const t1 = await token.mint(holder.address, supply, true, "0x");
+      const t1Receipt = await t1.wait();
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+      const t2 = await token.burn(holder.address, 10, "0x");
+      const t2Receipt = await t2.wait();
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+      const t3 = await token.burn(holder.address, 10, "0x");
+      const t3Receipt = await t3.wait();
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+      const t4 = await token.mint(holder.address, 20, true, "0x");
+      const t4Receipt = await t4.wait();
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      expect(
+        String(await token.getPastTotalSupply(t1Receipt.blockNumber - 1))
+      ).to.be.equal("0");
+      expect(
+        String(await token.getPastTotalSupply(t1Receipt.blockNumber))
+      ).to.be.equal("10000000000000000000000000");
+      expect(
+        String(await token.getPastTotalSupply(t1Receipt.blockNumber + 1))
+      ).to.be.equal("10000000000000000000000000");
+      expect(
+        String(await token.getPastTotalSupply(t2Receipt.blockNumber))
+      ).to.be.equal("9999999999999999999999990");
+      expect(
+        String(await token.getPastTotalSupply(t2Receipt.blockNumber + 1))
+      ).to.be.equal("9999999999999999999999990");
+      expect(
+        String(await token.getPastTotalSupply(t3Receipt.blockNumber))
+      ).to.be.equal("9999999999999999999999980");
+      expect(
+        String(await token.getPastTotalSupply(t3Receipt.blockNumber + 1))
+      ).to.be.equal("9999999999999999999999980");
+      expect(
+        String(await token.getPastTotalSupply(t4Receipt.blockNumber))
+      ).to.be.equal("10000000000000000000000000");
+      expect(
+        String(await token.getPastTotalSupply(t4Receipt.blockNumber + 1))
+      ).to.be.equal("10000000000000000000000000");
     });
   });
 };
