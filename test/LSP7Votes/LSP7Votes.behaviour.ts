@@ -4,6 +4,7 @@ import { expect } from "chai";
 import type { BigNumber } from "ethers";
 
 import { LSP7VotesMock } from "../../typechain-types/contracts/mocks/LSP7VotesMock";
+import { LSP7VotesInitMock } from "../../typechain-types/contracts/mocks/LSP7VotesInitMock";
 
 export type LSP7VotesTestAccounts = {
   holder: SignerWithAddress;
@@ -41,7 +42,7 @@ export type LSP7VotesDeployParams = {
 
 export type LSP7VotesTestContext = {
   accounts: LSP7VotesTestAccounts;
-  lsp7Votes: LSP7VotesMock;
+  lsp7Votes: LSP7VotesMock | LSP7VotesInitMock;
   deployParams: LSP7VotesDeployParams;
   supply: BigNumber;
 };
