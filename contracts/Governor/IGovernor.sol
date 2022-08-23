@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v4.7.0) (governance/IGovernor.sol)
 
 pragma solidity ^0.8.0;
 
@@ -28,9 +27,7 @@ abstract contract IGovernor is IERC165 {
     event ProposalCreated(
         uint256 proposalId,
         address proposer,
-        address[] targets,
         uint256[] values,
-        string[] signatures,
         bytes[] calldatas,
         uint256 startBlock,
         uint256 endBlock,
@@ -74,6 +71,18 @@ abstract contract IGovernor is IERC165 {
         string reason,
         bytes params
     );
+
+    /**
+     * @notice module:core
+     * @dev Target of the governor instance. It would be the keymanager of the DAO UP.
+     */
+    function target() public view virtual returns (address);
+
+    /**
+     * @notice module:core
+     * @dev Target of the governor instance. It would be the DAO UP.
+     */
+    function up() public view virtual returns (address);
 
     /**
      * @notice module:core
