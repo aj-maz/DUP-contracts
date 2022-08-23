@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {Timers} from "@openzeppelin/contracts/utils/Timers.sol";
-import {SafeCast} from "@openzeppelin/contracts/utils/Math/SafeCast.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEndedQueue.sol";
 import {IERC165, ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -531,10 +531,10 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
      * Note that if the executor is simply the governor itself, use of `relay` is redundant.
      */
     function relay(
-        address target,
+        address target_,
         uint256 value,
         bytes calldata data
     ) external virtual onlyGovernance {
-        Address.functionCallWithValue(target, data, value);
+        Address.functionCallWithValue(target_, data, value);
     }
 }
