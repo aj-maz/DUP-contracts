@@ -9,6 +9,7 @@ import {DoubleEndedQueue} from "@openzeppelin/contracts/utils/structs/DoubleEnde
 import {IERC165, ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import {IGovernor} from "./IGovernor.sol";
+import {ILSP6KeyManager} from "@lukso/lsp-smart-contracts/contracts/LSP6KeyManager/ILSP6KeyManager.sol";
 
 abstract contract GovernorCore is Context, IGovernor, ERC165 {
     using DoubleEndedQueue for DoubleEndedQueue.Bytes32Deque;
@@ -56,6 +57,12 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
      */
     receive() external payable virtual {
         require(_executor() == address(this));
+    }
+
+    function setInitialUpAndManager(address target_, address up_) public {
+        require(_target == address(0) && _up == address(0), "already setted.");
+        _target = target_;
+        _up = up_;
     }
 
     /**
@@ -109,7 +116,7 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
     /**
      * @dev See {IGovernor-hashProposal}.
      *
-     * The proposal id is produced by hashing the ABI encoded the `values` array, the `calldatas` array
+     * The proposal id is produced by hashing the ABI encoded the `calldatas` array
      * and the descriptionHash (bytes32 which itself is the keccak256 hash of the description string). This proposal id
      * can be produced from the proposal data which is part of the {ProposalCreated} event. It can even be computed in
      * advance, before the proposal is submitted.
@@ -119,13 +126,14 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
      * across multiple networks. This also means that in order to execute the same operation twice (on the same
      * governor) the proposer will have to change the description in order to avoid proposal id conflicts.
      */
-    function hashProposal(
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) public pure virtual override returns (uint256) {
-        return
-            uint256(keccak256(abi.encode(values, calldatas, descriptionHash)));
+    function hashProposal(bytes[] memory calldatas, bytes32 descriptionHash)
+        public
+        pure
+        virtual
+        override
+        returns (uint256)
+    {
+        return uint256(keccak256(abi.encode(calldatas, descriptionHash)));
     }
 
     /**
@@ -265,25 +273,20 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
     /**
      * @dev See {IGovernor-propose}.
      */
-    function propose(
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        string memory description
-    ) public virtual override returns (uint256) {
+    function propose(bytes[] memory calldatas, string memory description)
+        public
+        virtual
+        override
+        returns (uint256)
+    {
         require(
             getVotes(_msgSender(), block.number - 1) >= proposalThreshold(),
             "Governor: proposer votes below proposal threshold"
         );
 
         uint256 proposalId = hashProposal(
-            values,
             calldatas,
             keccak256(bytes(description))
-        );
-
-        require(
-            values.length == calldatas.length,
-            "Governor: invalid proposal length"
         );
         require(calldatas.length > 0, "Governor: empty proposal");
 
@@ -303,7 +306,6 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
         emit ProposalCreated(
             proposalId,
             _msgSender(),
-            values,
             calldatas,
             snapshot,
             deadline,
@@ -316,12 +318,14 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
     /**
      * @dev See {IGovernor-execute}.
      */
-    function execute(
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) public payable virtual override returns (uint256) {
-        uint256 proposalId = hashProposal(values, calldatas, descriptionHash);
+    function execute(bytes[] memory calldatas, bytes32 descriptionHash)
+        public
+        payable
+        virtual
+        override
+        returns (uint256)
+    {
+        uint256 proposalId = hashProposal(calldatas, descriptionHash);
 
         ProposalState status = state(proposalId);
         require(
@@ -332,9 +336,9 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
 
         emit ProposalExecuted(proposalId);
 
-        _beforeExecute(proposalId, values, calldatas, descriptionHash);
-        _execute(proposalId, values, calldatas, descriptionHash);
-        _afterExecute(proposalId, values, calldatas, descriptionHash);
+        _beforeExecute(proposalId, calldatas, descriptionHash);
+        _execute(proposalId, calldatas, descriptionHash);
+        _afterExecute(proposalId, calldatas, descriptionHash);
 
         return proposalId;
     }
@@ -344,16 +348,11 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
      */
     function _execute(
         uint256, /* proposalId */
-        uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 /*descriptionHash*/
     ) internal virtual {
-        string memory errorMessage = "Governor: call reverted without message";
         for (uint256 i = 0; i < calldatas.length; ++i) {
-            (bool success, bytes memory returndata) = _target.call{
-                value: values[i]
-            }(calldatas[i]);
-            Address.verifyCallResult(success, returndata, errorMessage);
+            ILSP6KeyManager(_target).execute(calldatas[i]);
         }
     }
 
@@ -362,7 +361,6 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
      */
     function _beforeExecute(
         uint256, /* proposalId */
-        uint256[] memory, /* values */
         bytes[] memory calldatas,
         bytes32 /*descriptionHash*/
     ) internal virtual {}
@@ -372,7 +370,6 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
      */
     function _afterExecute(
         uint256, /* proposalId */
-        uint256[] memory, /* values */
         bytes[] memory, /* calldatas */
         bytes32 /*descriptionHash*/
     ) internal virtual {}
@@ -383,12 +380,12 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
      *
      * Emits a {IGovernor-ProposalCanceled} event.
      */
-    function _cancel(
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) internal virtual returns (uint256) {
-        uint256 proposalId = hashProposal(values, calldatas, descriptionHash);
+    function _cancel(bytes[] memory calldatas, bytes32 descriptionHash)
+        internal
+        virtual
+        returns (uint256)
+    {
+        uint256 proposalId = hashProposal(calldatas, descriptionHash);
         ProposalState status = state(proposalId);
 
         require(

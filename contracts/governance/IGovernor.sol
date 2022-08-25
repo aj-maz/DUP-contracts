@@ -27,7 +27,6 @@ abstract contract IGovernor is IERC165 {
     event ProposalCreated(
         uint256 proposalId,
         address proposer,
-        uint256[] values,
         bytes[] calldatas,
         uint256 startBlock,
         uint256 endBlock,
@@ -126,7 +125,6 @@ abstract contract IGovernor is IERC165 {
      * @dev Hashing function used to (re)build the proposal id from the proposal details..
      */
     function hashProposal(
-        uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
     ) public pure virtual returns (uint256);
@@ -229,7 +227,6 @@ abstract contract IGovernor is IERC165 {
      * Emits a {ProposalCreated} event.
      */
     function propose(
-        uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
     ) public virtual returns (uint256 proposalId);
@@ -243,7 +240,6 @@ abstract contract IGovernor is IERC165 {
      * Note: some module can modify the requirements for execution, for example by adding an additional timelock.
      */
     function execute(
-        uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
     ) public payable virtual returns (uint256 proposalId);

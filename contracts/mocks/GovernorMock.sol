@@ -18,26 +18,23 @@ contract GovernorMock is
     Governor
 {
     constructor(
-        address target_,
-        address up_,
         string memory name_,
         ILSP7Votes token_,
         uint256 votingDelay_,
         uint256 votingPeriod_,
         uint256 quorumNumerator_
     )
-        Governor(target_, up_, name_)
+        Governor(name_)
         GovernorSettings(votingDelay_, votingPeriod_, 0)
         GovernorVotes(token_)
         GovernorVotesQuorumFraction(quorumNumerator_)
     {}
 
-    function cancel(
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 salt
-    ) public returns (uint256 proposalId) {
-        return _cancel(values, calldatas, salt);
+    function cancel(bytes[] memory calldatas, bytes32 salt)
+        public
+        returns (uint256 proposalId)
+    {
+        return _cancel(calldatas, salt);
     }
 
     function proposalThreshold()
@@ -49,11 +46,12 @@ contract GovernorMock is
         return super.proposalThreshold();
     }
 
-    function propose(
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        string memory description
-    ) public virtual override(GovernorCore) returns (uint256) {
-        return super.propose(values, calldatas, description);
+    function propose(bytes[] memory calldatas, string memory description)
+        public
+        virtual
+        override(GovernorCore)
+        returns (uint256)
+    {
+        return super.propose(calldatas, description);
     }
 }
