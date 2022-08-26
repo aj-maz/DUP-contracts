@@ -4,6 +4,8 @@ import { expect } from "chai";
 import type { BigNumber } from "ethers";
 
 import { GovernorMock } from "../../typechain-types/contracts/mocks/GovernorMock";
+import { GovernorMockInit } from "../../typechain-types/contracts/mocks/GovernorMockInit";
+
 import { LSP7VotesMock } from "../../typechain-types/contracts/mocks/LSP7VotesMock";
 import { CallReceiverMock } from "../../typechain-types/contracts/mocks/CallReceiverMock";
 
@@ -54,7 +56,7 @@ export type GovernanceTestContext = {
   accountAddress: string;
   governanceToken: LSP7VotesMock;
   callReceiver: CallReceiverMock;
-  governor: GovernorMock;
+  governor: GovernorMock | GovernorMockInit;
 };
 
 export const shouldBehaveLikeGovernance = (

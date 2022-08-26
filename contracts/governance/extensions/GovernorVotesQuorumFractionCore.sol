@@ -13,7 +13,7 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
  *
  * _Available since v4.3._
  */
-abstract contract GovernorVotesQuorumFractionCore is GovernorVotes {
+abstract contract GovernorVotesQuorumFractionCore is GovernorVotesCore {
     using Checkpoints for Checkpoints.History;
 
     uint256 private _quorumNumerator; // DEPRECATED

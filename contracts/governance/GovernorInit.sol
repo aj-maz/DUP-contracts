@@ -2,9 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {GovernorInitAbstract} from "./GovernorInitAbstract.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-abstract contract GovernorInit is GovernorInitAbstract, Initializable {
+abstract contract GovernorInit is GovernorInitAbstract {
     function initialize(
         address target_,
         address up_,
