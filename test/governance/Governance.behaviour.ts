@@ -1,23 +1,14 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ethers, network } from "hardhat";
+import { ethers } from "hardhat";
 import { expect } from "chai";
 import type { BigNumber } from "ethers";
+import mineBlocks from "../utils/mineBlocks";
 
 import { GovernorMock } from "../../typechain-types/contracts/mocks/GovernorMock";
 import { GovernorMockInit } from "../../typechain-types/contracts/mocks/GovernorMockInit";
 
 import { LSP7VotesMock } from "../../typechain-types/contracts/mocks/LSP7VotesMock";
 import { CallReceiverMock } from "../../typechain-types/contracts/mocks/CallReceiverMock";
-
-async function mineBlocks(blockNumber: number) {
-  while (blockNumber > 0) {
-    blockNumber--;
-    await network.provider.request({
-      method: "evm_mine",
-      params: [],
-    });
-  }
-}
 
 export type GovernanceTestAccounts = {
   owner: SignerWithAddress;

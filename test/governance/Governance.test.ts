@@ -2,7 +2,6 @@ import { LSPFactory } from "@lukso/lsp-factory.js";
 import { ethers } from "hardhat";
 import {
   getNamedAccounts,
-  GovernanceTestAccounts,
   GovernanceDeployParams,
   GovernanceTestContext,
   shouldBehaveLikeGovernance,
