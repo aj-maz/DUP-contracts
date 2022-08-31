@@ -13,7 +13,7 @@ import "../governance/extensions/GovernorTimelockControlInitAbstract.sol";
 import "../LSP7Votes/ILSP7Votes.sol";
 import {TimelockControllerCore} from "../governance/TimelockControllerCore.sol";
 
-contract GovernorMockInit is
+contract DUPGovernor is
     GovernorSettingsInitAbstract,
     GovernorVotesQuorumFractionInitAbstract,
     GovernorVotesInitAbstract,

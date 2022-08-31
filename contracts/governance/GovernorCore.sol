@@ -114,6 +114,20 @@ abstract contract GovernorCore is Context, IGovernor, ERC165 {
     }
 
     /**
+     * @dev See {IGovernor-version}.
+     */
+    function getProposals() public view virtual returns (string[] memory) {
+        return proposalsData;
+    }
+
+    /**
+     * @dev See {IGovernor-version}.
+     */
+    function getProposalsCount() public view virtual returns (uint256) {
+        return proposalsData.length;
+    }
+
+    /**
      * @dev See {IGovernor-hashProposal}.
      *
      * The proposal id is produced by hashing the ABI encoded the `calldatas` array

@@ -2,7 +2,15 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.9",
+  solidity: {
+    version: "0.8.9",
+    settings: {
+      optimizer: {
+        runs: 200,
+        enabled: true,
+      },
+    },
+  },
   networks: {
     lukso: {
       url: `https://rpc.l16.lukso.network/`,
