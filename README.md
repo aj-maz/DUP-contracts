@@ -8,10 +8,14 @@ For this hack I thought that DAOs are very well explored area in web3 and it mak
 
 ### Links:
 
-- [Live Version](http://dupdao.com/)
-- [Video Demo](http://dupdao.com/)
+- [Live Version](https://dupdao.com/)
+- [Video Demo](https://www.youtube.com/watch?v=oc5A16wiLSQ)
 - [Storage Test Contracts](https://www.dupdao.com/storage)
 - [Frontend Reposity](https://github.com/Ajand/DUP-client)
+
+### Authors
+
+Aj Maz : aseedgeek@gmail.com
 
 ## Smart Contracts
 
